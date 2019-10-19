@@ -2,11 +2,12 @@ import csv
 import plotly
 import plotly.graph_objects as go
 import networkx as nx
-# pajek
 import matplotlib.pyplot as plt
-
+import heapq
 
 # Find one user's all comments
+
+
 def Find_user_comments(user):
     if user in dict_users_to_comments:
         print(dict_users_to_comments[user])
@@ -14,47 +15,45 @@ def Find_user_comments(user):
             dict_comments[dict_users_to_comments[user][i]].print_node()
 
 
-# def Find_comment_reply(cur_cid):
-#     Num_comment = 1000
-#     past_cid = ''
-#     while Num_comment > 0:
-#         G.add_node(cur_cid)
-#         if past_cid != '':
-#             G.add_edge(cur_cid, past_cid)
-#         if cur_cid not in dict_comments:
-#             break
-#         cur_comment = dict_comments[cur_cid]
-#         cur_comment.print_node()
-#         past_cid = cur_cid
-#         if cur_comment.parent_id[0:2] == 't1':
-#             cur_cid = cur_comment.parent_id[3:]
-#         else:
-#             cur_cid = cur_comment.parent_id
-#         Num_comment = Num_comment - 1
+def Find_comment_reply(cur_cid):
+    Num_comment = 1000
+    past_cid = ''
+    while Num_comment > 0:
+        G.add_node(cur_cid)
+        if past_cid != '':
+            G.add_edge(cur_cid, past_cid)
+        if cur_cid not in dict_comments:
+            break
+        cur_comment = dict_comments[cur_cid]
+        cur_comment.print_node()
+        past_cid = cur_cid
+        if cur_comment.parent_id[0:2] == 't1':
+            cur_cid = cur_comment.parent_id[3:]
+        else:
+            cur_cid = cur_comment.parent_id
+        Num_comment = Num_comment - 1
 
 
-# def Find_comment_reply_int(cur_cid):
-#     Num_comment = 1000
-#     cur_cnt = -1
-#     past_cnt = -1
-#     while Num_comment > 0:
-#         if cur_cid not in dict_comments:
-#             break
-#         cur_comment = dict_comments[cur_cid]
-#         cur_comment.print_node()
+def Find_comment_reply_int(cur_cid):
+    Num_comment = 1000
+    cur_cnt = -1
+    past_cnt = -1
+    while Num_comment > 0:
+        if cur_cid not in dict_comments:
+            break
+        cur_comment = dict_comments[cur_cid]
+        cur_comment.print_node()
+        cur_cnt = cur_cnt+1
+        G.add_node(cur_cnt)
+        if past_cnt >= 0:
+            G.add_edge(past_cnt, cur_cnt)
 
-#         cur_cnt = cur_cnt+1
-#         G.add_node(cur_cnt)
-
-#         if past_cnt >= 0:
-#             G.add_edge(past_cnt, cur_cnt)
-
-#         past_cnt = cur_cnt
-#         if cur_comment.parent_id[0:2] == 't1':
-#             cur_cid = cur_comment.parent_id[3:]
-#         else:
-#             cur_cid = cur_comment.parent_id
-#         Num_comment = Num_comment - 1
+        past_cnt = cur_cnt
+        if cur_comment.parent_id[0:2] == 't1':
+            cur_cid = cur_comment.parent_id[3:]
+        else:
+            cur_cid = cur_comment.parent_id
+        Num_comment = Num_comment - 1
 
 
 class comment_node:
@@ -148,9 +147,11 @@ class user_node:
 File_name = '2015-07-politics-sentiment.csv'
 Num_input = 1000000
 datas = []
-tresh_num_comment = 0
-dict_user_to_score = {}
-users_score = []
+thresh_num_comment = 10
+num_most_negative = 20
+num_most_changed = 20
+dict_users_history_score = {}
+list_most_negative = []
 # total num 337659
 
 comment_mode = 0
@@ -215,10 +216,12 @@ for num_week in range(len(timestamp_list) - 1):
     print('Finish processing')
 
     Output_Node_File_name = File_name[:-4] + \
-        '_output_node_week'+str(num_week+1)+'_thresh=0.csv'
+        '_output_node_week'+str(num_week+1)+'_thresh_' + \
+        str(thresh_num_comment)+'.csv'
     # print(Output_Node_File_name)
     Output_Edge_File_name = File_name[:-4] + \
-        '_output_edge_week'+str(num_week+1)+'_thresh=0.csv'
+        '_output_edge_week'+str(num_week+1)+'_thresh_' + \
+        str(thresh_num_comment)+'.csv'
     # print(Output_Edge_File_name)
 
     for k, user in dict_users.items():
@@ -238,7 +241,7 @@ for num_week in range(len(timestamp_list) - 1):
 
         for k, user in dict_users.items():
             # print(user.user_name, user.num_of_users)
-            if user.pos_comment+user.neg_comment >= tresh_num_comment:
+            if user.pos_comment+user.neg_comment >= thresh_num_comment:
                 for user_replied, user_idx in (user.list_of_users).items():
                     if user_replied in dict_users:
                         # print(user.user_name, user.num_of_users, len(user.list_of_users),user_replied, user_idx)
@@ -250,6 +253,8 @@ for num_week in range(len(timestamp_list) - 1):
 
     print('Finish Edge output')
 
+    list_user_and_score = []
+    list_user_and_changed_score = []
     with open(Output_Node_File_name, mode='w', newline='') as output_file:
         output_writer = csv.writer(
             output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -257,13 +262,46 @@ for num_week in range(len(timestamp_list) - 1):
             ['Id', 'Score', 'Pos_num', 'Neg_num', 'Total_num'])
 
         for k, user in dict_users.items():
-            if user.pos_comment + user.neg_comment >= tresh_num_comment:
+            if user.pos_comment + user.neg_comment >= thresh_num_comment:
+                list_user_and_score.append(
+                    tuple([user.user_name, user.total_average_score]))
+                if user.user_name in dict_users_history_score:
+                    cur_user_history_score = dict_users_history_score[user.user_name]
+                    while len(cur_user_history_score) < num_week:
+                        cur_user_history_score.append(-1)
+                    cur_user_history_score.append(user.total_average_score)
+                else:
+                    cur_user_history_score = []
+                    while len(cur_user_history_score) < num_week:
+                        cur_user_history_score.append(-1)
+                    cur_user_history_score.append(user.total_average_score)
+                    dict_users_history_score[user.user_name] = cur_user_history_score
+
+                if num_week >= 1:
+                    cur_user_history_score = dict_users_history_score[user.user_name]
+                    if cur_user_history_score[-2] != -1:
+                        list_user_and_changed_score.append(
+                            tuple([user.user_name, abs(cur_user_history_score[-1]-cur_user_history_score[-2])]))
+
                 # output_writer.writerow(
                 #     [user.user_name, user.total_average_score])
                 output_writer.writerow(
                     [user.user_name, user.total_average_score, user.pos_comment, user.neg_comment, user.pos_comment+user.neg_comment])
 
     print('Finish Node output')
+
+    # find most negative person this week
+    list_user_and_score_nsmallest = heapq.nsmallest(
+        num_most_negative, list_user_and_score, key=lambda x: x[1])
+    print('N most negative person:')
+    print(list_user_and_score_nsmallest)
+
+    list_user_and_changed_score_nlargest = heapq.nlargest(
+        num_most_changed, list_user_and_changed_score, key=lambda x: x[1])
+    print('N most changed person:')
+    print(list_user_and_changed_score_nlargest)
+
+    # if num_week >= 1:
 
     # Find_user_comments('Bartiemus')
     # Find_user_comments('Trauermarsch')
@@ -286,68 +324,3 @@ for num_week in range(len(timestamp_list) - 1):
 # user = 'TheLightningL0rd'
 # user = 'gsfgf'
 # Find_user_comments(user)
-
-
-# for cid, comment in dict_comments.items():
-#     user_id = comment.user_id
-#     if len(dict_users_to_comments[user_id]) > 5:
-#         print(user_id)
-
-
-# G = nx.Graph()
-# start_cid = 'cstb5l2'
-# Find_comment_reply_int(start_cid)
-
-# print(G.number_of_nodes())
-# print(G.number_of_edges())
-
-# plt.subplot(111)
-# nx.draw(G, with_labels=True, font_weight='bold')
-# # plt.subplot(122)
-# # nx.draw_shell(G, nlist=[range(5, 10), range(5)],
-# #               with_labels=True, font_weight='bold')
-
-# plt.show()
-
-
-# Find those parent in data
-# for cid, comment in dict_comments.items():
-#     if comment.parent_id in dict_comments:
-#         print(cid, comment.parent_id)
-
-
-# for cid, comment in dict_comments.items():
-#     G.add_node(cid)
-# print(cid)
-# comment.print_node()
-
-# for user in items(dict_users_to_comments):
-#     G.add_node(user)
-# comment = []
-# user = []
-# Num = 100000
-
-# with open(File_name, encoding='utf-8') as csvfile:
-#     readCSV = csv.reader(csvfile, delimiter=',')
-#     for row in readCSV:
-#         if len(row) == 6:
-#             Num = Num - 1
-#             # print(row)
-#             comment.append(row[0])
-#             user.append(row[1][3:])
-#             if Num <= 0:
-#                 break
-
-# comments = set(comment)
-# users = set(user)
-
-# print('csocqyf' in comments)
-# print('csocqyf' in users)
-# print('csocqz5' in comments)
-# print('csocqz5' in users)
-# print('csomuq9' in comments)
-# print('csomuq9' in users)
-# print('csocind' in comments)
-# print('csocind' in users)
-# print('csoci48' in comments)
-# print('csoci48' in users)
