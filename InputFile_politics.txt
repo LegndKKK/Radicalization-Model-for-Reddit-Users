@@ -1,0 +1,6 @@
+RC_2015-07-politics-toxic.csv
+RC_2015-08-politics-toxic.csv
+RC_2015-09-politics-toxic.csv
+RC_2015-10-politics-toxic.csv
+RC_2015-11-politics-toxic.csv
+RC_2015-12-politics-toxic.csv
