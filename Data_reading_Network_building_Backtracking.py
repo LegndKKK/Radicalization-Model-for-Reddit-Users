@@ -206,7 +206,7 @@ for File_name in File_name_list:
                 
         print(File_name, title)
         for row in readCSV:
-            if row != title and len(row) == len(title) and row[user_id_idx] != 'AutoModerator' and row[comment_idx] != '[deleted]' and row[comment_idx] != '[removed]' and row[user_id_idx] != 'MAGABrickBot':
+            if row != title and len(row) == len(title) and row[user_id_idx] != 'AutoModerator' and row[comment_idx] != '[deleted]' and row[comment_idx] != '[removed]' and row[user_id_idx] != '[deleted]' and row[user_id_idx] != 'MAGABrickBot':
                 row[comment_idx] = row[comment_idx].rstrip()
                 if row[comment_id_idx] == '' or not row[timestamp_idx].isnumeric() or not row[toxic_score_idx].isnumeric():
                     continue
@@ -239,6 +239,7 @@ end_time = timestamp_list[1]
 for data in datas:
     if data[4] >= start_time and data[4] <= end_time:
         new_comment_node = comment_node()
+        # def add_to_node(self, cid, pid, lid, uid, t, cw, pip, s):
         new_comment_node.add_to_node(
             data[0], data[1], data[7],data[2], data[3], data[4], data[5], data[6])
         dict_comments[data[0]] = new_comment_node
@@ -280,7 +281,17 @@ dict_users = {}
 start_time = timestamp_list[-2]
 end_time = timestamp_list[-1]
 
+list_user_num_comment = []
+list_user_most_comment=[]
+
+dict_user_num={}
+
+
 for data in datas:
+    if data[2] in dict_user_num:
+        dict_user_num[data[2]] += 1
+    else:
+        dict_user_num[data[2]]=1
     if data[4] >= start_time and data[4] <= end_time:
         new_comment_node = comment_node()
         new_comment_node.add_to_node(
@@ -290,6 +301,19 @@ for data in datas:
             dict_users_to_comments[data[2]].append(data[0])
         else:
             dict_users_to_comments[data[2]] = [data[0]]
+
+for k, v in dict_user_num.items():
+    list_user_num_comment.append(tuple([k,v]))
+list_user_num_nsmallest = heapq.nlargest(30, list_user_num_comment, key=lambda x: x[1])
+for i in list_user_num_nsmallest:
+    list_user_most_comment.append(i[0])
+    print(i[0])
+    print(dict_user_num[i[0]])
+with open('Track_Name.txt', mode='w') as Output_temp_writer:
+    for i in list_user_most_comment:
+        Output_temp_writer.write(i)
+        Output_temp_writer.write('\n')
+    
 
 for data in datas:
     if data[4] >= start_time and data[4] <= end_time and data[1] in dict_comments:

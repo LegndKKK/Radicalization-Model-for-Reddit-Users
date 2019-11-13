@@ -415,9 +415,6 @@ for num_week in range(len(timestamp_list) - 1):
     del dict_users_to_comments
     del dict_users
 
-    # output to csv of comments
-    # if comment_mode and row[0] != 'id':
-    #     output_writer.writerow([row[0], row[1][3:], 'Directed'])
 # user = 'TheLightningL0rd'
 # user = 'gsfgf'
 # Find_user_comments(user)
