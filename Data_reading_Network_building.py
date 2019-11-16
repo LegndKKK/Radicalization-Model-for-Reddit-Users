@@ -10,7 +10,7 @@ import calendar
 
 class comment_node:
     comment_id = ''
-    link_id=''
+    link_id = ''
     parent_id = ''
     user_id = ''
     score = 0
@@ -73,20 +73,20 @@ class user_node:
 
     def add_to_node(self, target_uid, score, post_lid):
         self.list_of_posts.add(post_lid)
-        if score ==0:
+        if score == 0:
             self.pos_comment += 1
         else:
             self.neg_comment += 1
         if target_uid in self.list_of_users:
             idx = self.list_of_users[target_uid]
-            if score ==0:
+            if score == 0:
                 self.pos_num[idx] += 1
             else:
                 self.neg_num[idx] += 1
         else:
             self.num_of_users += 1
             self.list_of_users[target_uid] = self.num_of_users
-            if score ==0:
+            if score == 0:
                 self.pos_num.append(1)
                 self.neg_num.append(0)
                 self.average_score.append(1.0)
@@ -97,26 +97,26 @@ class user_node:
 
 
 parser = argparse.ArgumentParser(description='Process the data and build up the network\n'
-                    '<usage> : python Data_reading_Network_building.py -i InputFile_politics.txt -o politics -ts 4 -th 10 -p 0 -nmn 20')
-parser.add_argument('-i', dest='Input_File_Name', action='store',default='InputFile.txt',
+                                 '<usage> : python Data_reading_Network_building.py -i InputFile_politics.txt -o politics -ts 4 -th 10 -p 0 -nmn 20')
+parser.add_argument('-i', dest='Input_File_Name', action='store', default='InputFile.txt',
                     help='The name of input files, one in a row (default = InputFile.txt)')
-parser.add_argument('-o', dest='Output_File_Name', action='store',default='OutputFile',
+parser.add_argument('-o', dest='Output_File_Name', action='store', default='OutputFile',
                     help='The name of output file (default = OutputFile)')
-parser.add_argument('-ts', dest='Time_step', action='store',default=4, type=int,
+parser.add_argument('-ts', dest='Time_step', action='store', default=4, type=int,
                     help='The number of steps to split in one month for calculation (default = 4)')
-parser.add_argument('-p', dest='In_Post', action='store',default=0, type=int,
+parser.add_argument('-p', dest='In_Post', action='store', default=0, type=int,
                     help='Open the In Post mode or not (default = 0 connection mode)')
-parser.add_argument('-th', dest='Thresh_comment', action='store',default=10, type=int,
+parser.add_argument('-th', dest='Thresh_comment', action='store', default=10, type=int,
                     help='only the users have more comments than threshold will be considered in network (default = 10)')
-parser.add_argument('-nmn', dest='num_most_negative', action='store',default=20, type=int,
+parser.add_argument('-nmn', dest='num_most_negative', action='store', default=20, type=int,
                     help='number of most negative person we list (default = 20)')
-parser.add_argument('-nmc', dest='num_most_changed', action='store',default=20, type=int,
+parser.add_argument('-nmc', dest='num_most_changed', action='store', default=20, type=int,
                     help='number of most changed person we list (default = 20)')
-parser.add_argument('-thc', dest='Thresh_changed', action='store',default=0.5, type=float,
+parser.add_argument('-thc', dest='Thresh_changed', action='store', default=0.5, type=float,
                     help='threshold of changed score to track (default = 0.5)')
-parser.add_argument('-thn', dest='Thresh_negative', action='store',default=0.8, type=float,
+parser.add_argument('-thn', dest='Thresh_negative', action='store', default=0.8, type=float,
                     help='threshold to define most negative user comparing to average score (default = 0.8)')
-parser.add_argument('-thm', dest='Thresh_mode', action='store',default=1, type=int,
+parser.add_argument('-thm', dest='Thresh_mode', action='store', default=1, type=int,
                     help='to decide we determine most negative and most changed user by a number or by threshold (default = 1)')
 
 
@@ -138,37 +138,40 @@ datas = []
 dict_users_history_score = {}
 
 # Generate input file list
-File_name_list=[]
+File_name_list = []
 with open(args.Input_File_Name, encoding='utf-8') as inputs:
     for row in inputs:
         File_name_list.append(row.rstrip())
 
-#File_name_list=['RC_2015-07-subreddit-toxic-PARSED.csv','RC_2015-08-subreddit-toxic-PARSED.csv','RC_2015-09-subreddit-toxic-PARSED.csv','RC_2015-10-subreddit-toxic-PARSED.csv','RC_2015-11-subreddit-toxic-PARSED.csv','RC_2015-12-subreddit-toxic-PARSED.csv']
+# File_name_list=['RC_2015-07-subreddit-toxic-PARSED.csv','RC_2015-08-subreddit-toxic-PARSED.csv','RC_2015-09-subreddit-toxic-PARSED.csv','RC_2015-10-subreddit-toxic-PARSED.csv','RC_2015-11-subreddit-toxic-PARSED.csv','RC_2015-12-subreddit-toxic-PARSED.csv']
 
 
-#Find the timestamp split list
-first_file=File_name_list[0]
+# Find the timestamp split list
+first_file = File_name_list[0]
 year_idx = first_file.find('20')
 Date_year = 2000 + int(first_file[year_idx + 2:year_idx + 4])
 Date_month = int(first_file[year_idx + 5:year_idx + 7])
 
-timestamp_list=[]
-day_step=30/args.Time_step
+timestamp_list = []
+day_step = 30/args.Time_step
 
 for i in range(len(File_name_list)):
     Date_day = 1
-    timestamp_list.append(int(calendar.timegm(tuple([Date_year, Date_month, Date_day, 0, 0, 0]))))
+    timestamp_list.append(
+        int(calendar.timegm(tuple([Date_year, Date_month, Date_day, 0, 0, 0]))))
     for j in range(args.Time_step - 1):
         Date_day += day_step
-        timestamp_list.append(int(calendar.timegm(tuple([Date_year, Date_month, Date_day, 0, 0, 0]))))
+        timestamp_list.append(
+            int(calendar.timegm(tuple([Date_year, Date_month, Date_day, 0, 0, 0]))))
     Date_month += 1
 
 if Date_month > 12:
     Date_year += 1
     Date_month = 1
 
-print(Date_year,Date_month)
-timestamp_list.append(int(calendar.timegm(tuple([Date_year, Date_month, 1, 0, 0, 0]))))
+print(Date_year, Date_month)
+timestamp_list.append(
+    int(calendar.timegm(tuple([Date_year, Date_month, 1, 0, 0, 0]))))
 
 print(timestamp_list)
 
@@ -179,21 +182,21 @@ for File_name in File_name_list:
             title = row
             break
 
-        #Find index        
-        #comment_id_idx=title.index('id')
+        # Find index
+        # comment_id_idx=title.index('id')
         comment_id_idx = -1
         parent_id_idx = -1
-        link_id_idx=-1
+        link_id_idx = -1
         user_id_idx = -1
         comment_idx = -1
-        timestamp_idx=-1
+        timestamp_idx = -1
         toxic_score_idx = -1
-       
+
         for i in range(len(title)):
-            if title[i] == 'id' or title[i]=='comment_id':
+            if title[i] == 'id' or title[i] == 'comment_id':
                 comment_id_idx = i
             if title[i] == 'link_id':
-                link_id_idx=i
+                link_id_idx = i
             if title[i] == 'parent_id':
                 parent_id_idx = i
             if title[i] == 'author':
@@ -203,8 +206,8 @@ for File_name in File_name_list:
             if title[i] == 'created_utc':
                 timestamp_idx = i
             if title[i] == 'sentiment':
-                toxic_score_idx=i
-                
+                toxic_score_idx = i
+
         print(File_name, title)
         for row in readCSV:
             if row != title and len(row) == len(title) and row[user_id_idx] != 'AutoModerator' and row[comment_idx] != '[deleted]' and row[comment_idx] != '[removed]' and row[user_id_idx] != 'MAGABrickBot':
@@ -213,16 +216,17 @@ for File_name in File_name_list:
                     continue
                 # link=parent post
                 if row[link_id_idx] == row[parent_id_idx]:
-                    datas.append([row[comment_id_idx], row[parent_id_idx][3:],row[user_id_idx],
-                                row[comment_idx], int(row[timestamp_idx]), 1, int(row[toxic_score_idx]),row[link_id_idx]])
+                    datas.append([row[comment_id_idx], row[parent_id_idx][3:], row[user_id_idx],
+                                  row[comment_idx], int(row[timestamp_idx]), 1, int(row[toxic_score_idx]), row[link_id_idx]])
                 else:
                     datas.append([row[comment_id_idx], row[parent_id_idx][3:], row[user_id_idx],
-                                row[comment_idx], int(row[timestamp_idx]), 0, int(row[toxic_score_idx]),row[link_id_idx]])
+                                  row[comment_idx], int(row[timestamp_idx]), 0, int(row[toxic_score_idx]), row[link_id_idx]])
                 Total_comment += 1
-                if row[toxic_score_idx]=='2':
+                if row[toxic_score_idx] == '2':
                     Total_toxic_comment += 1
 
-Overall_average_score = args.Thresh_negative*(Total_comment-Total_toxic_comment)/Total_comment
+Overall_average_score = args.Thresh_negative * \
+    (Total_comment-Total_toxic_comment)/Total_comment
 print(Overall_average_score)
 
 # loop over week
@@ -239,7 +243,7 @@ for num_week in range(len(timestamp_list) - 1):
         if data[4] >= start_time and data[4] <= end_time:
             new_comment_node = comment_node()
             new_comment_node.add_to_node(
-                data[0], data[1], data[7],data[2], data[3], data[4], data[5], data[6])
+                data[0], data[1], data[7], data[2], data[4], data[3], data[5], data[6])
             dict_comments[data[0]] = new_comment_node
             if data[2] in dict_users_to_comments:
                 dict_users_to_comments[data[2]].append(data[0])
@@ -260,20 +264,23 @@ for num_week in range(len(timestamp_list) - 1):
 
     print('Finish processing')
 
-    
-    Output_Node_File_name = args.Output_File_Name + '_node_week' + str(num_week + 1) + '.csv'    
-    Output_Edge_File_name = args.Output_File_Name + '_edge_week' + str(num_week + 1) + '.csv'
-
+    Output_Node_File_name = args.Output_File_Name + \
+        '_node_week' + str(num_week + 1) + '.csv'
+    Output_Edge_File_name = args.Output_File_Name + \
+        '_edge_week' + str(num_week + 1) + '.csv'
 
     for k, user in dict_users.items():
-        user.total_average_score = (user.pos_comment) / (user.pos_comment + user.neg_comment)
+        user.total_average_score = (
+            user.pos_comment) / (user.pos_comment + user.neg_comment)
         for replied_user, idx in user.list_of_users.items():
-            user.average_score[idx] = (user.pos_num[idx]) / (user.pos_num[idx] + user.neg_num[idx])
+            user.average_score[idx] = (
+                user.pos_num[idx]) / (user.pos_num[idx] + user.neg_num[idx])
 
     print('Finish calculating')
 
-    with open(Output_Edge_File_name, mode='w', newline='',encoding='utf-8') as output_file:
-        output_writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    with open(Output_Edge_File_name, mode='w', newline='', encoding='utf-8') as output_file:
+        output_writer = csv.writer(
+            output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         output_writer.writerow(['Source', 'Target', 'Score'])
 
         for k, user in dict_users.items():
@@ -287,14 +294,15 @@ for num_week in range(len(timestamp_list) - 1):
 
     list_user_and_score = []
     list_user_and_changed_score = []
-    list_user_most_negative=[]
-    list_user_most_changed=[]
+    list_user_most_negative = []
+    list_user_most_changed = []
 
-    #updating the history score
+    # updating the history score
     for k, user in dict_users.items():
         if user.pos_comment + user.neg_comment >= args.Thresh_comment:
-            if args.Thresh_mode==0:
-                list_user_and_score.append(tuple([user.user_name, user.total_average_score]))
+            if args.Thresh_mode == 0:
+                list_user_and_score.append(
+                    tuple([user.user_name, user.total_average_score]))
             elif user.total_average_score < Overall_average_score:
                 list_user_most_negative.append(user.user_name)
             if user.user_name in dict_users_history_score:
@@ -310,56 +318,56 @@ for num_week in range(len(timestamp_list) - 1):
                 dict_users_history_score[user.user_name] = cur_user_history_score
 
             if num_week:
-                cur_user_history_score = dict_users_history_score[user.user_name]                                  
+                cur_user_history_score = dict_users_history_score[user.user_name]
                 if cur_user_history_score[-2] != -1 and cur_user_history_score[-2] > cur_user_history_score[-1]:
-                    if args.Thresh_mode==0:  
+                    if args.Thresh_mode == 0:
                         list_user_and_changed_score.append(
                             tuple([user.user_name, cur_user_history_score[-2] - cur_user_history_score[-1]]))
                     else:
-                        if cur_user_history_score[-2] - cur_user_history_score[-1]>=args.Thresh_changed:
+                        if cur_user_history_score[-2] - cur_user_history_score[-1] >= args.Thresh_changed:
                             list_user_most_changed.append(user.user_name)
 
-                        
     # find most negative users this week
     print(num_week)
-    if args.Thresh_mode==0:
+    if args.Thresh_mode == 0:
         list_user_and_score_nsmallest = heapq.nsmallest(
-            args.num_most_negative, list_user_and_score, key=lambda x: x[1])        
+            args.num_most_negative, list_user_and_score, key=lambda x: x[1])
         for i in list_user_and_score_nsmallest:
             list_user_most_negative.append(i[0])
         print('N most negative person:')
         print(list_user_most_negative)
     else:
         for user in list_user_most_negative:
-            print(user,dict_users[user].total_average_score)
+            print(user, dict_users[user].total_average_score)
 
-    
-    #find most changed users
-    if args.Thresh_mode==0:
+    # find most changed users
+    if args.Thresh_mode == 0:
         list_user_and_changed_score_nlargest = heapq.nlargest(
             args.num_most_changed, list_user_and_changed_score, key=lambda x: x[1])
-        
+
         for i in list_user_and_changed_score_nlargest:
             list_user_most_changed.append(i[0])
         print('N most changed person:')
         print(list_user_most_changed)
     else:
-        list_user_most_changed=set(list_user_most_changed)
-        list_user_most_changed=list(list_user_most_changed)
+        list_user_most_changed = set(list_user_most_changed)
+        list_user_most_changed = list(list_user_most_changed)
 
-    #find the list of posts that most negative users in
+    # find the list of posts that most negative users in
     if args.In_Post:
-        list_posts_most_negative_in=[]
+        list_posts_most_negative_in = []
         for user in list_user_most_negative:
-            user_n=dict_users[user]
+            user_n = dict_users[user]
             for post in user_n.list_of_posts:
                 list_posts_most_negative_in.append(post)
         set_posts_most_negative_in = set(list_posts_most_negative_in)
 
-    #output to csvfile
+    # output to csvfile
     with open(Output_Node_File_name, mode='w', newline='', encoding='utf-8') as output_file:
-        output_writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        output_writer.writerow(['Id', 'Score', 'Pos_num', 'Neg_num', 'Total_num','isMost'])   
+        output_writer = csv.writer(
+            output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        output_writer.writerow(
+            ['Id', 'Score', 'Pos_num', 'Neg_num', 'Total_num', 'isMost'])
         for k, user in dict_users.items():
             if user.pos_comment + user.neg_comment >= args.Thresh_comment:
                 user_ischanged = 0
@@ -368,13 +376,14 @@ for num_week in range(len(timestamp_list) - 1):
                     user_isnegative = 1
                 if user.user_name in list_user_most_changed:
                     user_ischanged = 1
-                row_to_write = [user.user_name, user.total_average_score, user.pos_comment, user.neg_comment, user.pos_comment + user.neg_comment]
-                
-                #1 - most changed
-                #2 - most negative
-                #3 - most changed and negative
-                #4 - replied by most neg
-                #5 - replying to most neg
+                row_to_write = [user.user_name, user.total_average_score,
+                                user.pos_comment, user.neg_comment, user.pos_comment + user.neg_comment]
+
+                # 1 - most changed
+                # 2 - most negative
+                # 3 - most changed and negative
+                # 4 - replied by most neg
+                # 5 - replying to most neg
 
                 if not user_isnegative and not user_ischanged:
                     if args.In_Post:
@@ -398,7 +407,6 @@ for num_week in range(len(timestamp_list) - 1):
                 output_writer.writerow(row_to_write)
 
     print('Finish Node output')
-
 
     # Find_user_comments('Bartiemus')
     # Find_user_comments('Trauermarsch')

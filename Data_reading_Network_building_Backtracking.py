@@ -241,7 +241,7 @@ for data in datas:
         new_comment_node = comment_node()
         # def add_to_node(self, cid, pid, lid, uid, t, cw, pip, s):
         new_comment_node.add_to_node(
-            data[0], data[1], data[7],data[2], data[3], data[4], data[5], data[6])
+            data[0], data[1], data[7],data[2], data[4], data[3], data[5], data[6])
         dict_comments[data[0]] = new_comment_node
         if data[2] in dict_users_to_comments:
             dict_users_to_comments[data[2]].append(data[0])
