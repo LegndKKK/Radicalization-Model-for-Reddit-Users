@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import heapq
 import argparse
 import calendar
-import random
 
 
 class comment_node:
@@ -295,8 +294,6 @@ for num_week in range(len(timestamp_list) - 1):
             new_row=[0,0,0,0,0,0,0,0]
             for data in datas:
                 if data[2] == cur_author and data[4] >= start_time and data[4] <= end_time:
-                    # if cur_author == 'PoliticsModeratorBot':
-                    #     print(data)
                     if data[8] == 'politics':
                         if data[6] == 1:
                             new_row[1] += 1
@@ -309,27 +306,19 @@ for num_week in range(len(timestamp_list) - 1):
                             new_row[2] += 1
                     cur_parent = data[1]
                     if cur_parent not in dict_comments:
-                        if cur_author == 'PoliticsModeratorBot':
-                            print('No parent found')
                         continue
                     parent_node = dict_comments[cur_parent]
-                    #parent_node.print_node()
                     if parent_node.timestamp < start_time or parent_node.timestamp > end_time:
-                        #print('skips')
                         continue
                     if parent_node.subreddit == 'politics':
                         if parent_node.score == 1:
-                            #print(3)
                             new_row[5] += 1
                         else:
-                            #print(2)
                             new_row[4] += 1
                     else:
                         if parent_node.score == 1:
-                            #print(7)
                             new_row[7] += 1
                         else:
-                            #print(6)
                             new_row[6] += 1
             
             #print(new_row)
