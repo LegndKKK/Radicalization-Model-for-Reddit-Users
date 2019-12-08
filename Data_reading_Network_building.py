@@ -1,8 +1,4 @@
 import csv
-import plotly
-import plotly.graph_objects as go
-import networkx as nx
-import matplotlib.pyplot as plt
 import heapq
 import argparse
 import calendar
@@ -243,7 +239,7 @@ for num_week in range(len(timestamp_list) - 1):
         if data[4] >= start_time and data[4] <= end_time:
             new_comment_node = comment_node()
             new_comment_node.add_to_node(
-                data[0], data[1], data[7], data[2], data[4], data[3], data[5], data[6])
+                data[0], data[1], data[7], data[2], data[3], data[4], data[5], data[6])
             dict_comments[data[0]] = new_comment_node
             if data[2] in dict_users_to_comments:
                 dict_users_to_comments[data[2]].append(data[0])
