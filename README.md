@@ -37,4 +37,28 @@ This code is for further score analysis in  comment approach. It reads the extra
 
 ##### python Data_reading_Network_building_Authors.py -i InputFile_politics.txt
 
+### parseauthorresults.py
+Parses the data generated from the comment approach into a format readable by graph.py. Set variables to be read in the script
+
+
+#### python parseauthorresults.py
+
+### graph.py
+Visualizes the data generated parseauthorsresults.py. Set variables to be read in the script
+
+#### python graph.py
+
+### NLPTrain.py
+Trains and saves a CNN model for toxic classification using the kaggle toxic dataset. Set variables to be read in the script
+
+
+#### python NLPTrain.py
+
+### NLPClassify.py 
+Classifies reddit comments as toxic or not toxic. Set variables to be read in the script
+
+
+#### python NLPClassify.py
+
+
 Joseph Wang and Jikai Zhang
