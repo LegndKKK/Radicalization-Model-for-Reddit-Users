@@ -230,10 +230,10 @@ for File_name in File_name_list:
                 row[comment_idx] = row[comment_idx].rstrip()
                 # link=parent post
                 if row[link_id_idx] == row[parent_id_idx]:
-                    datas.append([row[comment_id_idx], row[parent_id_idx], row[user_id_idx], row[comment_idx], int(
+                    datas.append([row[comment_id_idx], row[parent_id_idx][3:], row[user_id_idx], row[comment_idx], int(
                         row[timestamp_idx]), 1, int(row[toxic_score_idx]), row[link_id_idx], row[subreddit_idx]])
                 else:
-                    datas.append([row[comment_id_idx], row[parent_id_idx], row[user_id_idx], row[comment_idx], int(
+                    datas.append([row[comment_id_idx], row[parent_id_idx][3:], row[user_id_idx], row[comment_idx], int(
                         row[timestamp_idx]), 0, int(row[toxic_score_idx]), row[link_id_idx], row[subreddit_idx]])
                 Total_comment += 1
                 if row[toxic_score_idx] == '1':
@@ -249,39 +249,10 @@ list_authors_names = set(list_authors_names)
 list_authors_names = list(list_authors_names)
 
 
-#cur_subreddit = 'Incels'
-cur_subreddit = 'MadeMeSmile'
-#cur_subreddit = 'politics'
-#cur_subreddit = 'The_Donald'
-#cur_subreddit = 'gaming'
-
-with open('CommentIDs.csv', mode='w', newline='', encoding='utf-8') as output_file:
-    output_writer = csv.writer(
-        output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    list_temp_user = []
-    count_uesr = 0
-    count_parent=0
-    for data in datas:
-        if data[2] == 'FourtyCreekJohn' and data[8]!=cur_subreddit:
-            list_temp_user.append(data[1])
-            print(data)
-            count_uesr += 1
-            output_writer.writerow([data[1]])
-
-    for data in datas:
-        if data[0] in list_temp_user and data[8] != cur_subreddit:
-            print(data)
-            count_parent += 1
-
-    print(count_uesr,count_parent)
-
-        
-
 
 # loop over week
 for num_week in range(len(timestamp_list) - 1):
     dict_comments = {}
-
     start_time = timestamp_list[num_week]
     end_time = timestamp_list[num_week + 1]
 
@@ -295,6 +266,11 @@ for num_week in range(len(timestamp_list) - 1):
             dict_comments[data[0]] = new_comment_node
 
     print('Finish processing')
+    cur_subreddit = 'Incels'
+    #cur_subreddit = 'MadeMeSmile'
+    #cur_subreddit = 'politics'
+    #cur_subreddit = 'The_Donald'
+    #cur_subreddit = 'gaming'
     dict_user_count = {}
 
     for cur_author in list_authors_names:
@@ -329,9 +305,6 @@ for num_week in range(len(timestamp_list) - 1):
                     dict_user_count[cur_author][7] += 1
                 else:
                     dict_user_count[cur_author][6] += 1
-
-    # for k, v in dict_user_count.items():
-    #     print(k, v)
 
     with open('Author_result_'+str(num_week)+'.csv', mode='w', newline='', encoding='utf-8') as output_file:
         output_writer = csv.writer(
@@ -384,7 +357,3 @@ for num_week in range(len(timestamp_list) - 1):
     for k, v in dict_comments.items():
         del v
     del dict_comments
-
-# user = 'TheLightningL0rd'
-# user = 'gsfgf'
-# Find_user_comments(user)
